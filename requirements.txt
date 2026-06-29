@@ -1,0 +1,8 @@
+streamlit>=1.42
+plotly>=5.20
+pandas>=2.0
+qrcode[pil]>=7.4
+Pillow>=10.0
+Authlib>=1.3.2
+python-lucide>=0.5
+extra-streamlit-components>=0.1.43
