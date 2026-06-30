@@ -1,48 +1,4 @@
-"""
-app.py
-------
-Role : point d'entree unique de l'application Streamlit.
-
-Responsabilites :
-- configuration de la page et chargement de la feuille de style
-  (claire, et sombre en complement selon la preference utilisateur) ;
-- initialisation de la base de donnees au premier lancement ;
-- creation guidee du premier compte administrateur si la base est vide ;
-- affichage de l'ecran de connexion (logo et titre institutionnel
-  centres, formulaire de connexion inchange) ;
-- verification de l'expiration de session a chaque chargement de page ;
-- routage vers les pages selon le role de l'utilisateur connecte ;
-- pages communes : bibliotheque, depot de document, favoris, mes
-  paiements, messagerie, annonces, notifications, parametres
-  personnels.
-
-Les pages reservees a l'administration sont deleguees a admin.py.
-
-Nouveau en V2 (voir audit et cahier des charges) :
-- sidebar compacte avec logo, dans l'esprit des tableaux de bord
-  administratifs modernes ;
-- renommage "Bibliotheque numerique" -> "Bibliotheque" ;
-- circuit complet de monetisation (acces gratuit/payant, demande et
-  suivi de paiement en presentiel) ;
-- espace communautaire (messagerie, annonces, notifications,
-  commentaires) ;
-- page Parametres personnelle (profil, photo, preferences, securite,
-  deconnexion), distincte de la Configuration systeme reservee a
-  l'administration ;
-- garde de session (auth.verifier_session_active), absente en V1.
-
-Nouveau en V3 (voir audit-isabee-v2.md) :
-- page de connexion enrichie d'onglets Inscription et Mot de passe
-  oublie, en complement (jamais en remplacement) de la connexion par
-  matricule ;
-- connexion Google et Microsoft (authentification OIDC native de
-  Streamlit, voir auth.py et secrets.toml.example), elle aussi en
-  complement de la connexion par matricule -- invisible et sans
-  aucun effet si elle n'est pas configuree ;
-- paiement Mobile Money (Orange Money, MTN MoMo) propose en option a
-  cote du paiement en presentiel, jamais a sa place ;
-- entrees Corbeille et Moyens de paiement dans le menu d'administration.
-"""
+""" app.py ------ Role : point d'entree unique de l'application Streamlit. Responsabilites : - configuration de la page et chargement de la feuille de style (claire, et sombre en complement selon la preference utilisateur) ; - initialisation de la base de donnees au premier lancement ; - creation guidee du premier compte administrateur si la base est vide ; - affichage de l'ecran de connexion (logo et titre institutionnel centres, formulaire de connexion inchange) ; - verification de l'expiration de session a chaque chargement de page ; - routage vers les pages selon le role de l'utilisateur connecte ; - pages communes : bibliotheque, depot de document, favoris, mes paiements, messagerie, annonces, notifications, parametres personnels. Les pages reservees a l'administration sont deleguees a admin.py. Nouveau en V2 (voir audit et cahier des charges) : - sidebar compacte avec logo, dans l'esprit des tableaux de bord administratifs modernes ; - renommage "Bibliotheque numerique" -> "Bibliotheque" ; - circuit complet de monetisation (acces gratuit/payant, demande et suivi de paiement en presentiel) ; - espace communautaire (messagerie, annonces, notifications, commentaires) ; - page Parametres personnelle (profil, photo, preferences, securite, deconnexion), distincte de la Configuration systeme reservee a l'administration ; - garde de session (auth.verifier_session_active), absente en V1. Nouveau en V3 (voir audit-isabee-v2.md) : - page de connexion enrichie d'onglets Inscription et Mot de passe oublie, en complement (jamais en remplacement) de la connexion par matricule ; - connexion Google et Microsoft (authentification OIDC native de Streamlit, voir auth.py et secrets.toml.example), elle aussi en complement de la connexion par matricule -- invisible et sans aucun effet si elle n'est pas configuree ; - paiement Mobile Money (Orange Money, MTN MoMo) propose en option a cote du paiement en presentiel, jamais a sa place ; - entrees Corbeille et Moyens de paiement dans le menu d'administration. """
 
 import streamlit as st
 import extra_streamlit_components as stx
@@ -97,22 +53,7 @@ NOM_COOKIE_SESSION = "isabee_session"
 
 
 def _gestionnaire_cookies() -> stx.CookieManager:
-    """
-    Instance unique (memorisee dans st.session_state, propre a chaque
-    session de navigateur) du gestionnaire de cookies, pour la
-    connexion persistante ("se souvenir de moi", voir
-    auth.generer_jeton_session).
-
-    Important : NE PAS utiliser @st.cache_resource ici. CookieManager
-    cree un widget interne (composant Streamlit cote navigateur), et
-    Streamlit interdit explicitement tout widget a l'interieur d'une
-    fonction mise en cache (CachedWidgetWarning, qui devient une
-    veritable erreur bloquante dans les versions recentes) : le widget
-    ne s'executerait qu'au premier appel ("cache miss"), ce qui
-    romprait la synchronisation des cookies a chaque rafraichissement
-    suivant. st.session_state est le mecanisme correct pour conserver
-    une instance unique par session sans declencher cette restriction.
-    """
+    """ Instance unique (memorisee dans st.session_state, propre a chaque session de navigateur) du gestionnaire de cookies, pour la connexion persistante ("se souvenir de moi", voir auth.generer_jeton_session). Important : NE PAS utiliser @st.cache_resource ici. CookieManager cree un widget interne (composant Streamlit cote navigateur), et Streamlit interdit explicitement tout widget a l'interieur d'une fonction mise en cache (CachedWidgetWarning, qui devient une veritable erreur bloquante dans les versions recentes) : le widget ne s'executerait qu'au premier appel ("cache miss"), ce qui romprait la synchronisation des cookies a chaque rafraichissement suivant. st.session_state est le mecanisme correct pour conserver une instance unique par session sans declencher cette restriction. """
     if "gestionnaire_cookies" not in st.session_state:
         st.session_state["gestionnaire_cookies"] = stx.CookieManager()
     return st.session_state["gestionnaire_cookies"]
@@ -132,19 +73,7 @@ def _aucun_compte_existant() -> bool:
 
 
 def _afficher_en_tete_publique() -> None:
-    """
-    En-tete affichee uniquement sur les ecrans pre-authentification
-    (configuration initiale et connexion) : logo, titre institutionnel
-    et message d'accueil animes, tous centres. N'affecte aucun autre
-    element de la page de connexion (le formulaire reste celui defini
-    par page_connexion).
-
-    Nouveau en V4 : une photo ronde (CHEMIN_LOGO, reutilise comme
-    visuel d'accueil tant qu'aucun autre visuel dedie n'est fourni) est
-    placee en haut a droite du titre principal, et le texte d'accueil
-    apparait avec une legere animation de fondu (CSS, voir
-    assets/style.css : .message-accueil).
-    """
+    """ En-tete affichee uniquement sur les ecrans pre-authentification (configuration initiale et connexion) : logo, titre institutionnel et message d'accueil animes, tous centres. N'affecte aucun autre element de la page de connexion (le formulaire reste celui defini par page_connexion). Nouveau en V4 : une photo ronde (CHEMIN_LOGO, reutilise comme visuel d'accueil tant qu'aucun autre visuel dedie n'est fourni) est placee en haut a droite du titre principal, et le texte d'accueil apparait avec une legere animation de fondu (CSS, voir assets/style.css : .message-accueil). """
     _, colonne_centre, _ = st.columns([1, 2, 1])
     with colonne_centre:
         colonne_titre, colonne_photo_ronde = st.columns([5, 1])
@@ -163,30 +92,14 @@ def _afficher_en_tete_publique() -> None:
             except Exception:
                 pass
         st.markdown(
-            """
-            <div class="en-tete-connexion">
-                <h1>SOURCE ISABEE</h1>
-                <p>Plateforme de gestion des ressources pédagogiques</p>
-            </div>
-            <div class="message-accueil">
-                Bienvenue sur votre espace numérique ISABEE — retrouvez vos documents,
-                échangez avec votre communauté académique et suivez vos ressources
-                pédagogiques en toute confiance.
-            </div>
-            """,
+            """ <div class="en-tete-connexion"> <h1>SOURCE ISABEE</h1> <p>Plateforme de gestion des ressources pédagogiques</p> </div> <div class="message-accueil"> Bienvenue sur votre espace numérique ISABEE — retrouvez vos documents, échangez avec votre communauté académique et suivez vos ressources pédagogiques en toute confiance. </div> """,
             unsafe_allow_html=True,
         )
 
 
 @st.cache_data
 def _logo_base64() -> str:
-    """
-    Encode le logo institutionnel en base64 pour l'inserer directement
-    dans un bloc HTML personnalise (photo ronde de la page de
-    connexion), ce que st.image seul ne permet pas de positionner
-    librement. Mis en cache (le fichier ne change pas en cours
-    d'execution) afin de ne relire le disque qu'une seule fois.
-    """
+    """ Encode le logo institutionnel en base64 pour l'inserer directement dans un bloc HTML personnalise (photo ronde de la page de connexion), ce que st.image seul ne permet pas de positionner librement. Mis en cache (le fichier ne change pas en cours d'execution) afin de ne relire le disque qu'une seule fois. """
     import base64
     with open(CHEMIN_LOGO, "rb") as f:
         return base64.b64encode(f.read()).decode("ascii")
@@ -480,6 +393,21 @@ def page_bibliotheque() -> None:
                 if document.description:
                     st.write(document.description)
 
+                # Apercu visuel des premieres pages du document (nouveau,
+                # ajoute apres la mise en production initiale -- voir
+                # apercu_documents.py). N'affiche rien si l'apercu n'a
+                # pas encore ete genere pour ce document (cas des
+                # documents deposes avant l'ajout de cette
+                # fonctionnalite, voir admin.page_maintenance pour les
+                # generer en une fois) ou si la bibliotheque pymupdf
+                # n'est pas disponible : import local, jamais bloquant
+                # pour le reste de l'affichage de la bibliotheque.
+                try:
+                    import apercu_documents
+                    apercu_documents.afficher_apercu_document(document)
+                except Exception:
+                    pass
+
             with colonne_action:
                 acces_autorise = True
                 if document.est_payant:
@@ -701,14 +629,7 @@ def page_favoris() -> None:
 
 
 def page_mes_telechargements() -> None:
-    """
-    Page "Mes telechargements" (nouveau en V4, cahier des charges
-    point 16) : liste des documents deja telecharges par
-    l'utilisateur, les plus recents en premier. Distincte de
-    "Historique" (consultation, pas necessairement suivie d'un
-    telechargement) et de "Mes favoris" (choix volontaire, independant
-    du fait d'avoir telecharge ou non).
-    """
+    """ Page "Mes telechargements" (nouveau en V4, cahier des charges point 16) : liste des documents deja telecharges par l'utilisateur, les plus recents en premier. Distincte de "Historique" (consultation, pas necessairement suivie d'un telechargement) et de "Mes favoris" (choix volontaire, independant du fait d'avoir telecharge ou non). """
     st.subheader("Mes telechargements")
     utilisateur = auth.utilisateur_courant()
     documents = archive_manager.documents_telecharges_par(utilisateur.id)
@@ -721,12 +642,7 @@ def page_mes_telechargements() -> None:
 
 
 def page_historique() -> None:
-    """
-    Page "Documents recemment consultes" (nouveau en V4, cahier des
-    charges point 15). Un bouton permet d'effacer volontairement cet
-    historique (effacer_historique_consultation), sans affecter ni les
-    favoris ni les telechargements de l'utilisateur.
-    """
+    """ Page "Documents recemment consultes" (nouveau en V4, cahier des charges point 15). Un bouton permet d'effacer volontairement cet historique (effacer_historique_consultation), sans affecter ni les favoris ni les telechargements de l'utilisateur. """
     st.subheader("Historique")
     utilisateur = auth.utilisateur_courant()
     documents = archive_manager.documents_recemment_consultes(utilisateur.id)
@@ -744,14 +660,7 @@ def page_historique() -> None:
 
 
 def _afficher_carte_document_compacte(document) -> None:
-    """
-    Carte compacte d'un document, reutilisee par Mes favoris, Mes
-    telechargements et Historique : titre, image de couverture si
-    disponible (nouveau en V4 -- voir assets/style.css, classe
-    .vignette-couverture, pour le rendu HD avec coins arrondis et
-    ombre legere), et metadonnees principales. N'affecte pas l'affichage
-    detaille de la fiche d'un document dans la Bibliotheque elle-meme.
-    """
+    """ Carte compacte d'un document, reutilisee par Mes favoris, Mes telechargements et Historique : titre, image de couverture si disponible (nouveau en V4 -- voir assets/style.css, classe .vignette-couverture, pour le rendu HD avec coins arrondis et ombre legere), et metadonnees principales. N'affecte pas l'affichage detaille de la fiche d'un document dans la Bibliotheque elle-meme. """
     if document.image_couverture:
         colonne_image, colonne_texte = st.columns([1, 4])
         with colonne_image:
@@ -1057,15 +966,7 @@ def page_configuration_systeme() -> None:
 # =====================================================================
 
 def _afficher_robot_orientation() -> None:
-    """
-    Petit assistant d'orientation (nouveau en V4, cahier des charges
-    point 6), toujours disponible -- aucune cle API, aucune dependance
-    reseau : les reponses proviennent entierement de la FAQ de
-    navigation (models.FAQ_NAVIGATION, voir assistant.py pour le
-    moteur de correspondance par mots-cles). L'historique de la
-    conversation en cours est conserve dans st.session_state pour la
-    duree de la session uniquement (jamais en base de donnees).
-    """
+    """ Petit assistant d'orientation (nouveau en V4, cahier des charges point 6), toujours disponible -- aucune cle API, aucune dependance reseau : les reponses proviennent entierement de la FAQ de navigation (models.FAQ_NAVIGATION, voir assistant.py pour le moteur de correspondance par mots-cles). L'historique de la conversation en cours est conserve dans st.session_state pour la duree de la session uniquement (jamais en base de donnees). """
     with st.popover("Assistant", icon=icone("Chat"), use_container_width=True):
         st.caption("Posez une question sur la navigation dans SOURCE ISABEE.")
         historique = st.session_state.setdefault("assistant_historique", [])
@@ -1114,16 +1015,7 @@ def _menu_navigation(utilisateur) -> str:
         page_active = st.session_state.get("page_active", "Bibliotheque")
 
         def _bouton(libelle: str, nom_icone: str, badge: int = 0) -> None:
-            """
-            Bouton de navigation de la sidebar. Si badge > 0, un badge
-            numerote de type WhatsApp/Android est affiche a cote du
-            libelle (nouveau en V4, cahier des charges point 1) :
-            implemente en HTML/CSS juste avant le bouton plutot que
-            dans le libelle du bouton lui-meme (Streamlit ne permet pas
-            d'inserer du HTML dans le texte d'un st.button), avec une
-            legere animation d'apparition (voir assets/style.css,
-            classe .badge-notification).
-            """
+            """ Bouton de navigation de la sidebar. Si badge > 0, un badge numerote de type WhatsApp/Android est affiche a cote du libelle (nouveau en V4, cahier des charges point 1) : implemente en HTML/CSS juste avant le bouton plutot que dans le libelle du bouton lui-meme (Streamlit ne permet pas d'inserer du HTML dans le texte d'un st.button), avec une legere animation d'apparition (voir assets/style.css, classe .badge-notification). """
             actif = page_active == libelle
             if badge > 0:
                 texte_badge = "99+" if badge > 99 else str(badge)
