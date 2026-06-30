@@ -1,38 +1,4 @@
-"""
-admin.py
---------
-Role : rendre les pages reservees a l'administration :
-- tableau de bord (indicateurs cles, graphiques Plotly, listes recentes) ;
-- gestion des comptes utilisateurs (creation, modification, suspension) ;
-- gestion des documents et circuit de validation ;
-- gestion des paiements (validation manuelle, presentiel) ;
-- gestion des annonces administratives ;
-- gestion des commentaires (moderation) ;
-- gestion des notifications (diffusion ciblee) ;
-- consultation filtrable du journal systeme.
-
-Ce module orchestre les autres modules metier (statistics.py,
-users.py, archive_manager.py, payments.py, communication.py,
-settings.py) et ne contient lui-meme aucune requete SQL directe.
-
-Correctifs de securite apportes en V2 (voir audit) :
-- toute donnee fournie par un utilisateur (titre de document, nom et
-  prenom, contenu de commentaire...) est desormais systematiquement
-  passee par utils.echapper_html avant insertion dans un bloc
-  unsafe_allow_html. En V1, le titre d'un document etait injecte sans
-  echappement dans le tableau de bord : un titre contenant une balise
-  <script> s'executait dans le navigateur de tout administrateur
-  consultant la page (XSS stocke).
-
-Nouveau en V3 (voir audit-isabee-v2.md) :
-- page_gestion_corbeille() : restauration ou suppression definitive
-  des documents deplaces en corbeille.
-- page_gestion_moyens_paiement() : configuration des moyens de
-  paiement Mobile Money (jamais codes en dur).
-- page_gestion_paiements() affiche desormais, en plus du circuit
-  presentiel inchange, le canal Mobile Money et la preuve de paiement
-  jointe lorsque c'est le cas.
-"""
+""" admin.py -------- Role : rendre les pages reservees a l'administration : - tableau de bord (indicateurs cles, graphiques Plotly, listes recentes) ; - gestion des comptes utilisateurs (creation, modification, suspension) ; - gestion des documents et circuit de validation ; - gestion des paiements (validation manuelle, presentiel) ; - gestion des annonces administratives ; - gestion des commentaires (moderation) ; - gestion des notifications (diffusion ciblee) ; - consultation filtrable du journal systeme. Ce module orchestre les autres modules metier (statistics.py, users.py, archive_manager.py, payments.py, communication.py, settings.py) et ne contient lui-meme aucune requete SQL directe. Correctifs de securite apportes en V2 (voir audit) : - toute donnee fournie par un utilisateur (titre de document, nom et prenom, contenu de commentaire...) est desormais systematiquement passee par utils.echapper_html avant insertion dans un bloc unsafe_allow_html. En V1, le titre d'un document etait injecte sans echappement dans le tableau de bord : un titre contenant une balise <script> s'executait dans le navigateur de tout administrateur consultant la page (XSS stocke). Nouveau en V3 (voir audit-isabee-v2.md) : - page_gestion_corbeille() : restauration ou suppression definitive des documents deplaces en corbeille. - page_gestion_moyens_paiement() : configuration des moyens de paiement Mobile Money (jamais codes en dur). - page_gestion_paiements() affiche desormais, en plus du circuit presentiel inchange, le canal Mobile Money et la preuve de paiement jointe lorsque c'est le cas. """
 
 import streamlit as st
 import plotly.express as px
@@ -82,12 +48,7 @@ def page_tableau_de_bord() -> None:
         for colonne, (libelle, valeur) in zip(colonnes, ligne_cartes):
             with colonne:
                 st.markdown(
-                    f"""
-                    <div class="carte carte-indicateur">
-                        <div class="valeur">{valeur}</div>
-                        <div class="libelle">{echapper_html(libelle)}</div>
-                    </div>
-                    """,
+                    f""" <div class="carte carte-indicateur"> <div class="valeur">{valeur}</div> <div class="libelle">{echapper_html(libelle)}</div> </div> """,
                     unsafe_allow_html=True,
                 )
 
@@ -156,15 +117,7 @@ def page_tableau_de_bord() -> None:
         st.caption("Documents recemment ajoutes")
         for document in archive_manager.documents_recents(6):
             st.markdown(
-                f"""
-                <div class="carte carte-document">
-                    <strong>{echapper_html(document.titre)}</strong><br>
-                    <span class="texte-secondaire">
-                        {echapper_html(document.libelle_type)} - {echapper_html(document.filiere)} -
-                        {echapper_html(document.niveau)} - {formater_date(document.date_ajout, avec_heure=False)}
-                    </span>
-                </div>
-                """,
+                f""" <div class="carte carte-document"> <strong>{echapper_html(document.titre)}</strong><br> <span class="texte-secondaire"> {echapper_html(document.libelle_type)} - {echapper_html(document.filiere)} - {echapper_html(document.niveau)} - {formater_date(document.date_ajout, avec_heure=False)} </span> </div> """,
                 unsafe_allow_html=True,
             )
 
@@ -172,15 +125,7 @@ def page_tableau_de_bord() -> None:
         st.caption("Dernieres connexions")
         for utilisateur in gestion_utilisateurs.utilisateurs_recemment_connectes(6):
             st.markdown(
-                f"""
-                <div class="carte carte-document">
-                    <strong>{echapper_html(utilisateur.nom_complet)}</strong><br>
-                    <span class="texte-secondaire">
-                        {echapper_html(LIBELLES_ROLE.get(utilisateur.role, utilisateur.role))} -
-                        derniere connexion : {formater_date(utilisateur.derniere_connexion)}
-                    </span>
-                </div>
-                """,
+                f""" <div class="carte carte-document"> <strong>{echapper_html(utilisateur.nom_complet)}</strong><br> <span class="texte-secondaire"> {echapper_html(LIBELLES_ROLE.get(utilisateur.role, utilisateur.role))} - derniere connexion : {formater_date(utilisateur.derniere_connexion)} </span> </div> """,
                 unsafe_allow_html=True,
             )
 
@@ -194,13 +139,7 @@ def page_tableau_de_bord() -> None:
             st.info("Aucun commentaire publie pour le moment.")
         for c in commentaires:
             st.markdown(
-                f"""
-                <div class="carte carte-document">
-                    <strong>{echapper_html(c['prenom_auteur'])} {echapper_html(c['nom_auteur'])}</strong>
-                    <span class="texte-secondaire"> sur {echapper_html(c['titre_document'])}</span><br>
-                    <span class="texte-secondaire">{echapper_html(c['contenu'])}</span>
-                </div>
-                """,
+                f""" <div class="carte carte-document"> <strong>{echapper_html(c['prenom_auteur'])} {echapper_html(c['nom_auteur'])}</strong> <span class="texte-secondaire"> sur {echapper_html(c['titre_document'])}</span><br> <span class="texte-secondaire">{echapper_html(c['contenu'])}</span> </div> """,
                 unsafe_allow_html=True,
             )
 
@@ -212,13 +151,7 @@ def page_tableau_de_bord() -> None:
         for a in annonces:
             cible = "Tous" if a.est_publique else LIBELLES_ROLE.get(a.role_cible, a.role_cible)
             st.markdown(
-                f"""
-                <div class="carte carte-document">
-                    <strong>{echapper_html(a.titre)}</strong>
-                    <span class="texte-secondaire"> - destinataires : {echapper_html(cible)}</span><br>
-                    <span class="texte-secondaire">{formater_date(a.date_publication, avec_heure=False)}</span>
-                </div>
-                """,
+                f""" <div class="carte carte-document"> <strong>{echapper_html(a.titre)}</strong> <span class="texte-secondaire"> - destinataires : {echapper_html(cible)}</span><br> <span class="texte-secondaire">{formater_date(a.date_publication, avec_heure=False)}</span> </div> """,
                 unsafe_allow_html=True,
             )
 
@@ -793,13 +726,7 @@ def page_gestion_notifications() -> None:
     st.caption("Notifications recentes (toutes destinataires confondus)")
     for n in communication.notifications_recentes(20):
         st.markdown(
-            f"""
-            <div class="carte carte-document">
-                <strong>{echapper_html(n['prenom_destinataire'])} {echapper_html(n['nom_destinataire'])}</strong>
-                <span class="texte-secondaire"> - {formater_date(n['date_creation'])}</span><br>
-                <span class="texte-secondaire">{echapper_html(n['contenu'])}</span>
-            </div>
-            """,
+            f""" <div class="carte carte-document"> <strong>{echapper_html(n['prenom_destinataire'])} {echapper_html(n['nom_destinataire'])}</strong> <span class="texte-secondaire"> - {formater_date(n['date_creation'])}</span><br> <span class="texte-secondaire">{echapper_html(n['contenu'])}</span> </div> """,
             unsafe_allow_html=True,
         )
 
@@ -990,6 +917,27 @@ def page_maintenance() -> None:
         if st.button("Optimiser la base de donnees", icon=icone("BarChart")):
             succes, message = maintenance.optimiser_base(administrateur.id)
             (st.success if succes else st.error)(message)
+
+        st.divider()
+        st.markdown("**Apercus visuels des documents**")
+        st.caption(
+            "Genere un extrait visuel des premieres pages pour les documents deposes "
+            "avant l'ajout de cette fonctionnalite (les nouveaux depots en beneficient "
+            "automatiquement). Necessite la bibliotheque pymupdf -- voir requirements.txt."
+        )
+        try:
+            import apercu_documents
+            if not apercu_documents.pymupdf_disponible():
+                st.warning(
+                    "La bibliotheque pymupdf n'est pas installee : redeployez l'application "
+                    "(elle est listee dans requirements.txt) pour activer cette fonctionnalite."
+                )
+            elif st.button("Generer les apercus manquants", icon=icone("Image")):
+                with st.spinner("Generation en cours..."):
+                    traites, echecs = apercu_documents.generer_apercus_manquants()
+                st.success(f"{traites} apercu(s) genere(s), {echecs} echec(s).")
+        except ImportError:
+            st.warning("Le module apercu_documents n'est pas present dans ce deploiement.")
 
     # -----------------------------------------------------------------
     # Stockage
